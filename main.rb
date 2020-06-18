@@ -1,3 +1,7 @@
+class Compilation
+
+end
+
 $lang_files = {c: 0, cpp: 0}
 
 def is_aDir?(directory)
@@ -11,16 +15,20 @@ def check_src_files_on(location)
         if is_aDir?(res[i])
             check_src_files_on(res[i])
         end
-        if res[i].end_with?(".c")
-            $lang_files[:c] += 1
-        end
+        $lang_files[:c] += 1 if res[i].end_with?(".c")
+        $lang_files[:cpp] += 1 if res[i].end_with?(".cpp")
     end
     Dir.chdir "../"
 end
 
+def detect_language()
+    return "C++" if $lang_files[:cpp] > 0
+    return "C" if $lang_files[:c] > 0
+end
+
 def main()
     check_src_files_on(".")
-    puts $lang_files
+    puts "The detected language is #{detect_language()}"
 end
 
 main()
