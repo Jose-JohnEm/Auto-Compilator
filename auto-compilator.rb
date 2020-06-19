@@ -1,5 +1,5 @@
 $Repo_Pwd = Dir.pwd
-$Compilation = {compilator: "", src: [], includes: [], flags: []}
+$Compilation = {compilator: "", src: [], includes: [], flags: [], name: ""}
 $lang_files = {c: 0, cpp: 0}
 
 def is_aDir?(directory)
@@ -12,6 +12,14 @@ def PWD
     res = cur.delete_prefix($Repo_Pwd + "/")
     res << "/"
     return res
+end
+
+def try_push()
+    to_include = "-I./" + PWD().delete_suffix("/")
+    puts $Compilation[:includes].index(to_include)
+    if $Compilation[:includes].index(to_include) == nil
+        $Compilation[:includes].push(to_include) 
+    end
 end
 
 def check_src_files_on(location)
@@ -27,6 +35,10 @@ def check_src_files_on(location)
         end
         if res[i].end_with?(".cpp")
             $lang_files[:cpp] += 1
+            $Compilation[:src].push(PWD() + res[i])
+        end
+        if res[i].end_with?(".h") or res[i].end_with?(".hpp")
+            try_push()
         end
     end
     Dir.chdir "../"
@@ -43,13 +55,25 @@ def detect_language()
     end
 end
 
-def main()
-    check_src_files_on(".")
-    puts "The detected language is #{detect_language()}"
+def debug_mode()
     puts "The compilator \"#{$Compilation[:compilator]}\" will be use"
-    #puts $Compilation[:src].join(" ")
-    Dir.chdir($Repo_Pwd)
-    system("#{$Compilation[:compilator]} #{$Compilation[:src].join(" ")}")
+    puts $Compilation[:includes].join(" ")
+    puts $Compilation[:src].join(" ")
 end
 
-main()
+def flags_handle(av)
+    debug_mode() if av.index("--debug") != nil and av.index("-D") != nil
+    $Compilation[:name] = "-o " + av[av.index("--name") + 1] if av.index("--name") != nil
+end
+
+def main(av)
+    check_src_files_on(".")
+    detect_language()
+    Dir.chdir($Repo_Pwd)
+    flags_handle(av)
+    command = "#{$Compilation[:compilator]} #{$Compilation[:src].join(" ")} #{$Compilation[:includes].join(" ")} #{$Compilation[:name]}"
+    puts command
+    system(command)
+end
+
+main(ARGV)
