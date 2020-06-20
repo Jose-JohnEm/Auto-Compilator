@@ -1,5 +1,5 @@
 $Repo_Pwd = Dir.pwd
-$Compilation = {compilator: "", src: [], includes: [], flags: [], name: ""}
+$Compilation = {compilator: "", src: [], includes: [], flags: [], libs: [], name: ""}
 $lang_files = {c: 0, cpp: 0}
 
 def is_aDir?(directory)
@@ -14,11 +14,18 @@ def PWD
     return res
 end
 
-def try_push()
+def try_push_header()
     to_include = "-I./" + PWD().delete_suffix("/")
     puts $Compilation[:includes].index(to_include)
     if $Compilation[:includes].index(to_include) == nil
         $Compilation[:includes].push(to_include) 
+    end
+end
+
+def try_push_libs()
+    to_include = "-L./" + PWD().delete_suffix("/")
+    if $Compilation[:libs].index(to_include) == nil
+        $Compilation[:libs].push(to_include) 
     end
 end
 
@@ -38,7 +45,10 @@ def check_src_files_on(location)
             $Compilation[:src].push(PWD() + res[i])
         end
         if res[i].end_with?(".h") or res[i].end_with?(".hpp")
-            try_push()
+            try_push_header()
+        end
+        if res[i].end_with?(".a")
+            try_push_libs()
         end
     end
     Dir.chdir "../"
@@ -56,12 +66,12 @@ def detect_language()
 end
 
 def debug_mode()
-    puts "#------- DEBUG MODE -------#"
+    puts "#------- DEBUG MODE -------#\n\n"
     puts "The detected language is : #{detect_language()}"
     puts "The compilator \"#{$Compilation[:compilator]}\" will be use"
     puts "Sources Files are : #{$Compilation[:src].join(" ")}"
     puts "Includes files are : #{$Compilation[:includes].join(" ")}"
-    puts "#--------------------------#"
+    puts "\n#--------------------------#"
     puts "\n"
 end
 
@@ -75,7 +85,8 @@ def main(av)
     detect_language()
     Dir.chdir($Repo_Pwd)
     flags_handle(av)
-    command = "#{$Compilation[:compilator]} #{$Compilation[:src].join(" ")} #{$Compilation[:includes].join(" ")} #{$Compilation[:name]}"
+    command = "#{$Compilation[:compilator]} #{$Compilation[:src].join(" ")}\
+    #{$Compilation[:includes].join(" ")} #{$Compilation[:name]} #{$Compilation[:libs].join(" ")}"
     puts command
     system(command)
 end
