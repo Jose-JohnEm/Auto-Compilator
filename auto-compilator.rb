@@ -56,13 +56,17 @@ def detect_language()
 end
 
 def debug_mode()
+    puts "#------- DEBUG MODE -------#"
+    puts "The detected language is : #{detect_language()}"
     puts "The compilator \"#{$Compilation[:compilator]}\" will be use"
-    puts $Compilation[:includes].join(" ")
-    puts $Compilation[:src].join(" ")
+    puts "Sources Files are : #{$Compilation[:src].join(" ")}"
+    puts "Includes files are : #{$Compilation[:includes].join(" ")}"
+    puts "#--------------------------#"
+    puts "\n"
 end
 
 def flags_handle(av)
-    debug_mode() if av.index("--debug") != nil and av.index("-D") != nil
+    debug_mode() if av.index("--debug") != nil or av.index("-D") != nil
     $Compilation[:name] = "-o " + av[av.index("--name") + 1] if av.index("--name") != nil
 end
 
@@ -75,5 +79,7 @@ def main(av)
     puts command
     system(command)
 end
+
+# --------- Process ----------#
 
 main(ARGV)
